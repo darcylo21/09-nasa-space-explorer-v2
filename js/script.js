@@ -59,10 +59,20 @@ imgButton.addEventListener('click', function() {
   }
 
   //clear previous search
-  gallery.innerHTML = '';
+  // clear previous search and show loading message
+  gallery.innerHTML = `
+  <div id="loading-message" style="text-align:center; padding:20px;">
+    <div class="spinner" style="margin:auto; border:4px solid #ccc; border-top:4px solid #333; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite;"></div>
+    <p>Loading images...</p>
+  </div>
+`;
 
+
+  
+  setTimeout(() => {
   let imgfound = false; // track if we found any images
   let count = 0; 
+  gallery.innerHTML = ''; // cleared previous images
 
   //once dates are vailded then fetch data from APON JSON
   fetch(apodData)
@@ -73,6 +83,7 @@ imgButton.addEventListener('click', function() {
         if (img.date >= startDate && img.date <= endDate && count < 9){ // count < 9 it so that no more than 9 imgs show at a time
           imgfound = true; //if there are imgs in between the user's dates then continue
           count++
+
         
           //display imgs
           const imgDiv = document.createElement("div"); //creates a div for the imgs
@@ -88,11 +99,19 @@ imgButton.addEventListener('click', function() {
                 <p>${img.explanation}</p>
             `;
         } else if (img.media_type === "video") {
+            // Use thumbnail if available
+            const thumbnail = img.thumbnail_url
+              ? img.thumbnail_url
+              : "https://img.youtube.com/vi/" + (img.url.split("/embed/")[1] || "") + "/hqdefault.jpg";
+
             imgDiv.innerHTML = `
-                <iframe src="${img.url}" title="${img.title}" frameborder="0" allowfullscreen class="img"></iframe>
-                <h3>${img.title}</h3>
-                <p>${img.date}</p>
-                <p>${img.explanation}</p>
+              <div class="video-thumb">
+                <img src="${thumbnail}" alt="${img.title}" class="img">
+                <div class="play-icon">▶</div>
+              </div>
+              <h3>${img.title}</h3>
+              <p>${img.date}</p>
+              <p>${img.explanation}</p>
             `;
         } 
         gallery.appendChild(imgDiv);//adds the div created into gallery where it holds the imgs/cards
@@ -113,5 +132,6 @@ imgButton.addEventListener('click', function() {
         console.error('Error fetching APOD data:', error);
           
         })
+      }, 1000); // Simulate loading delay
 
 })
